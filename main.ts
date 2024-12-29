@@ -39,7 +39,6 @@ function changePosition(){
         next = position + direction;
     }
     position = next
-
 }
 
 function moveOnLine(line: number){
@@ -47,12 +46,22 @@ function moveOnLine(line: number){
     strip.range(line * 8 + position, 1).showColor(NeoPixelColors.Green);    
 }
 
+/* Light projector part */
+
 let minBrightness = 40;
+let color = 0;
 input.onLogoEvent(TouchButtonEvent.Pressed,()=>minBrightness = (minBrightness + 20) % 255);
 
-function turnOn(highlight: boolean){
-    strip.setBrightness(highlight ? 255 : minBrightness);
-    strip.showColor(NeoPixelColors.White);
+const colors = [NeoPixelColors.Red,NeoPixelColors.Orange, NeoPixelColors.Yellow, NeoPixelColors.Green, NeoPixelColors.Blue, NeoPixelColors.Indigo, NeoPixelColors.Violet, NeoPixelColors.Purple, NeoPixelColors.White];
+
+function turnOn(isA: boolean, isB: boolean){
+    if(isA && isB){
+        // Change color
+        color = (color+1) % colors.length;
+    }else{
+        strip.setBrightness(isA ? 255 : minBrightness);
+        strip.showColor(colors[color]);
+    }
 }
 
 function turnOff() {
@@ -67,10 +76,10 @@ function runDetect(){
 
 function getDetectPressed(){
     class ButtonDectector{
-        onPressedFunction: (isA: boolean) => void;
+        onPressedFunction: (isA: boolean, isB: boolean) => void;
         onReleasedFunction: () => void;
         constructor(private pressed: boolean = false){}
-        onPressed(fct: (isA: boolean) => void): ButtonDectector {
+        onPressed(fct: (isA: boolean, isB: boolean) => void): ButtonDectector {
             this.onPressedFunction = fct;
             return this;
         }
@@ -83,7 +92,7 @@ function getDetectPressed(){
             const isBPressed = input.buttonIsPressed(Button.B);
             if (!this.pressed && (isAPressed || isBPressed)) {
                 this.pressed = true
-                this.onPressedFunction(isBPressed)
+                this.onPressedFunction(isAPressed, isBPressed)
             } else {
                 if (this.pressed && !isAPressed && !isBPressed) {
                     this.pressed = false
